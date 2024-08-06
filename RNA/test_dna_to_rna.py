@@ -8,10 +8,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(dna_to_rna("ACGT"), "ACGU")  # valid nucleotides present
 
     def test_invalid_nucleotides(self):
-        self.assertEqual(dna_to_rna("TXACG"), "Invalid nucleotide in string")  # only T nucleotides present
+        self.assertEqual(dna_to_rna("TXACG"), "Invalid nucleotide in string")  # invalid nucleotide present
 
     def test_empty_nucleotides(self):
-        self.assertEqual(dna_to_rna(""), "Empty DNA string")
+        self.assertEqual(dna_to_rna(""), "Empty DNA string")  # empty string as input
 
 
 if __name__ == '__main__':
