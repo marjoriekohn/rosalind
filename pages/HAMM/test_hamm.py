@@ -1,5 +1,5 @@
 import unittest
-from point_mutations import point_mutations
+from hamm import point_mutations
 
 
 class MyTestCase(unittest.TestCase):

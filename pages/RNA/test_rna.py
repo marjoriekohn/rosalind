@@ -1,5 +1,5 @@
 import unittest
-from dna_to_rna import dna_to_rna
+from rna import dna_to_rna
 
 
 class MyTestCase(unittest.TestCase):

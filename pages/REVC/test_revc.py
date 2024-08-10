@@ -1,5 +1,5 @@
 import unittest
-from reverse_complement import reverse_complement
+from revc import reverse_complement
 
 
 class MyTestCase(unittest.TestCase):

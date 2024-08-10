@@ -1,4 +1,4 @@
-def reverse_complement(dna_string):
+def revc(dna_string):
     reverse_complement_dna = []
     complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 

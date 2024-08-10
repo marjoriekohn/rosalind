@@ -1,5 +1,5 @@
 import unittest
-from motif_dna import motif_dna
+from subs import motif_dna
 
 
 class TestMotifDNA(unittest.TestCase):
