@@ -1,9 +1,3 @@
-# Instructions
-# Given two strings s and t, t is a substring of s if t is contained as a contiguous collection of symbols in s.
-# As a result, t must be no longer than s.
-# Given: Two DNA strings s and t (each of length at most 1 kbp).
-# Return: All locations of t as a substring of s.
-
 def motif_dna(dna_string, dna_substring):
     substring_locations = []
 
