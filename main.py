@@ -1,83 +1,110 @@
-import os
+import sys
 import streamlit
 import importlib.util
+from pathlib import Path
 
-main_directory = os.getcwd()
-pages_directory = 'pages'
-problem_IDs = []
+# --- set up and configuration ---
+streamlit.set_page_config(page_title="Rosalind Solutions", layout="wide")
 
-for page in os.listdir(pages_directory):
-    if os.path.isdir(os.path.join(pages_directory, page)):
-        problem_IDs.append(page)
+# --- define directories using pathlib ---
+BASE_DIRECTORY = Path.getcwd()
+PAGES_DIRECTORY = BASE_DIR / "pages"
 
-if problem_IDs:
-    problem_IDs.sort()
-    sidebar = streamlit.sidebar.radio("Problem ID", problem_IDs)
+
+# --- Helper Functions ---
+def get_problem_ids(directory):
+	"""scans the directory for valid problem folders and returns a list of their names"""
+	if not directory.exists():
+		return []
+	return sorted(
+		[problem.name for problem in directory.iterdir() if problem.is_dir() and not problem.name.startswith("_")]
+		)
+
+
+def get_file_by_pattern(directory, pattern):
+	"""finds the first file matching a glob pattern"""
+	try:
+		return next(directory.glob(pattern))
+	except StopIteration:
+		return None
+
+
+def run_demo_module(file_path):
+	"""dynamically imports and executes the demo script"""
+	try:
+		# add the directory to sys.path so imports inside demo work
+		if str(file_path.parent) not in sys.path:
+			sys.path.append(str(file_path.parent))
+
+		spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
+		module = importlib.util.module_from_spec(spec)
+		spec.loader.exec_module(module)
+
+	except Exception as e:
+		streamlit.error(f"Error loading demo: {e}")
+
+
+# --- Main App Layout ---
+streamlit.title("Rosalind Problem Repository")
+
+# --- sidebar selection ---
+problem_ids = get_problem_ids(PAGES_DIRECTORY)
+
+if problem_ids:
+	# selection box (includes a search bar)
+	selected_id = streamlit.sidebar.selectbox("Select a Problem", problem_ids)
+
+	# define the specific folder for the selected problem
+	current_problem_dir = PAGES_DIR / selected_id
 else:
-    streamlit.error("No folders found in the 'pages' directory.")
-    sidebar = None
+	streamlit.error(f"No problem folders found in {PAGES_DIR}")
+	streamlit.stop()
 
-details, pseudocode, solution, demo = streamlit.tabs(["Details", "Pseudocode", "Solution", "Demo"])
 
-if sidebar:
-    markdown_details_file = None
-    markdown_pseudo_file = None
-    code_file = None
-    demo_file = None
-    folder_path = os.path.join(pages_directory, sidebar)
+# --- Main Content Tabs ---
+tab_details, tab_pseudo, tab_solution, tab_demo = streamlit.tabs(["📄 Details", "🧠 Pseudocode", "💻 Solution", "▶️ Demo"])
 
-    for file in os.listdir(folder_path):
-        if os.path.isdir(os.path.join(folder_path, file)):
-            continue
-        if file.startswith("pseudo"):
-            markdown_pseudo_file = file
-        elif file.endswith(".md") and "pseudo" not in file:
-            markdown_details_file = file
-        elif "demo" in file and file.endswith(".py"):
-            demo_file = file
-        elif "test" not in file and file.endswith(".py"):
-            code_file = file
+# 1. Details Tab
+with tab_details:
+	# look for .md file that doesn't start with 'pseudo'
+	details_file = get_file_by_pattern(current_problem_dir, "[!p]*.md")
 
-    with details:
-        if markdown_details_file:
-            file_path = os.path.join(folder_path, markdown_details_file)
-            with open(file_path, 'r') as file:
-                details_text = file.read()
-                streamlit.markdown(details_text)
-        else:
-            streamlit.write("No details file found in the selected folder.")
+	if details_file:
+		streamlit.markdown(details_file.read_text())
+	else:
+		streamlit.warning("No details file found.")
 
-    with pseudocode:
-        if markdown_pseudo_file:
-            file_path = os.path.join(folder_path, markdown_pseudo_file)
-            with open(file_path, 'r') as file:
-                pseudo_text = file.read()
-                streamlit.markdown(pseudo_text)
-        else:
-            streamlit.write("No pseudocode file found in the selected folder.")
 
-    with solution:
-        if code_file:
-            file_path = os.path.join(folder_path, code_file)
-            with open(file_path, 'r') as file:
-                code = file.read()
-                streamlit.code(code, language='python')
-        else:
-            streamlit.write("No solution file found in the selected folder.")
+# 2. Pseudocode Tab
+with tab_pseudo:
+	# look for file starting with 'pseudo' and ending in .md or .txt
+	pseudo_file = get_file_by_pattern(current_problem_dir, "pseudo*")
 
-    with demo:
-        if demo_file:
-            file_path = os.path.join(folder_path, demo_file)
-            try:
-                os.chdir(folder_path)
-                spec = importlib.util.spec_from_file_location("demo_dna", demo_file)
-                demo_dna = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(demo_dna)
-            except Exception as e:
-                streamlit.error(f"Error loading demo: {e}")
-            finally:
-                os.chdir(main_directory)
-        else:
-            streamlit.write("No demo file found in the selected folder.")
-else:
-    streamlit.write("No folder selected.")
+	if pseudo_file:
+		streamlit.markdown(pseudo_file.read_text())
+	else:
+		streamlit.info("No pseudocode provided.")
+
+
+# 3. Solution Tab
+with tab_solution:
+	# look for python files that aren't the demo or test files
+	python_files = list(current_problem_dir.glob("*.py"))
+	solution_file = next((f for f in python_files if "demo" not in f.name and "test" not in f.name), None)
+
+	if solution_file:
+		streamlit.code(solution_file.read_text(), language='python')
+	else:
+		streamlit.warning("No solution code found.")
+
+
+# 4. Demo Tab
+with tab_demo:
+	demo_file = get_file_by_pattern(current_problem_dir, "*demo*.py")
+
+	if demo_file:
+		if streamlit.button(f"Run {demo_file.name}"):
+			with streamlit.spinner("Running demo..."):
+				run_demo_module(demo_file)
+	else:
+		streamlit.info("No interactive demo available for this problem.")
