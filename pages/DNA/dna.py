@@ -5,4 +5,4 @@ def dna(dna_string):
         if nucleotide in counts:
             counts[nucleotide] += 1
 
-    return counts['A'], counts['C'], counts['G'], counts['T']
+    return counts
