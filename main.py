@@ -99,12 +99,15 @@ with tab_solution:
 
 
 # 4. Demo Tab
+@streamlit.fragment
+def run_demo_fragment(file_path):
+	run_demo_module(file_path)
+
+
 with tab_demo:
 	demo_file = get_file_by_pattern(current_problem_dir, "*demo*.py")
 
 	if demo_file:
-		if streamlit.button(f"Run {demo_file.name}"):
-			with streamlit.spinner("Running demo..."):
-				run_demo_module(demo_file)
+		run_demo_fragment(demo_file)
 	else:
 		streamlit.info("No interactive demo available for this problem.")
