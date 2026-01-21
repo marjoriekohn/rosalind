@@ -55,9 +55,9 @@ if problem_ids:
 	selected_id = streamlit.sidebar.selectbox("Select a Problem", problem_ids)
 
 	# define the specific folder for the selected problem
-	current_problem_dir = PAGES_DIR / selected_id
+	current_problem_dir = PAGES_DIRECTORY / selected_id
 else:
-	streamlit.error(f"No problem folders found in {PAGES_DIR}")
+	streamlit.error(f"No problem folders found in {PAGES_DIRECTORY}")
 	streamlit.stop()
 
 
