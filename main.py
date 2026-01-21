@@ -7,7 +7,7 @@ from pathlib import Path
 streamlit.set_page_config(page_title="Rosalind Solutions", layout="wide")
 
 # --- define directories using pathlib ---
-BASE_DIRECTORY = Path.getcwd()
+BASE_DIRECTORY = Path.cwd()
 PAGES_DIRECTORY = BASE_DIR / "pages"
 
 
