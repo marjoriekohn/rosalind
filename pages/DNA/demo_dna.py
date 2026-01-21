@@ -10,4 +10,4 @@ with streamlit.form("Demo"):
     if submitted:
         result = dna(input_val)
         streamlit.write("The respective number of times that the symbols 'A', 'C', 'G', and 'T' occur in the DNA string is: ")
-        streamlit.code(", ".join(map(str, result)))
+        streamlit.write(", ".join(map(str, result)))
